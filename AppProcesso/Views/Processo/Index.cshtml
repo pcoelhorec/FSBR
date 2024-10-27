@@ -1,0 +1,93 @@
+﻿@model IEnumerable<AppProcesso.Models.ProcessoListViewModel>
+@using Microsoft.AspNetCore.Mvc.Rendering
+
+@{
+    ViewData["Title"] = "Lista de Processos";
+}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+
+
+<div class="modal fade" id="detalhesModal" tabindex="-1" role="dialog" aria-labelledby="detalhesModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content custom-modal">
+            <div class="modal-header">
+                <h5 class="modal-title" id="detalhesModalLabel">Detalhes do Processo</h5>
+
+            </div>
+            <div class="modal-body">
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
+
+<h2>Lista de Processos</h2>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>NPU</th>
+            <th>Data de Cadastro</th>
+            <th>UF</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var processo in Model)
+        {
+            <tr>
+                <td>@MascararNpu(processo.Npu)</td>
+                <td>@processo.DataCadastro.ToString("dd/MM/yyyy HH:mm:ss")</td>
+                <td>@processo.UF</td>
+                <td>
+                    <a href="@Url.Action("Detalhes", new { id = processo.Id })" class="btn btn-primary btn-sm"  data-toggle="modal" data-target="#detalhesModal">Visualizar</a>
+                </td>
+                <td><a href="@Url.Action("Delete", new { id = processo.Id })" class="btn btn-danger btn-sm" onclick="return confirm('Tem certeza que deseja excluir este registro?');">Excluir</a>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<nav>
+    <ul class="pagination">
+        @for (int i = 1; i <= ViewBag.TotalPages; i++)
+        {
+            <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                <a class="page-link" href="?page=@i">@i</a>
+            </li>
+        }
+    </ul>
+</nav>
+
+
+    <script>
+        $(document).ready(function () {
+            $('a[data-toggle="modal"]').on('click', function (e) {
+                e.preventDefault();
+                var url = $(this).attr('href');
+                $.get(url, function (data) {
+                    $('#detalhesModal .modal-body').html(data);
+                    $('#detalhesModal').modal({
+                        backdrop: 'static',
+                        keyboard: true
+                    });
+                    $('#detalhesModal').modal('show');
+                });
+            });
+        });
+
+    @functions {
+        string MascararNpu(string npu)
+        {
+            if (npu.Length == 20)
+            {
+                return npu.Substring(0, 7) + "-" + npu.Substring(7, 2) + "." + npu.Substring(9, 4) + "." + npu.Substring(13, 1) + "." + npu.Substring(14, 2) + "." + npu.Substring(16, 4);
+            }
+            return npu;
+        }
+    }
+
+    </script>
+
